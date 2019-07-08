@@ -78,7 +78,7 @@ void setup()
     // debug output
     Serial.begin(9600);
 
-   	while(!Serial.isConnected()) // wait for Host to open serial port
+   while(!Serial.isConnected()) // wait for Host to open serial port
      	Particle.process();
 
     Serial.printf("%s\n", "Connected Debug");
@@ -92,14 +92,14 @@ void setup()
 
   debug = true;
 
-	// set time zone to western us
-	Time.zone(TZ);
-	updateTime();
+  // set time zone to western us
+  Time.zone(TZ);
+  updateTime();
 
   tempSensor.turnOn();
 
   // power monitoring
-	Wire.begin();
+  Wire.begin();
   powerModule.Initialize();
 
   // weight sensor
@@ -125,28 +125,28 @@ void setup()
     }
   }
 
-	//lightSensor.turnOn();
+  //lightSensor.turnOn();
 }
 
 void printDebug(DeviceData &data)
 {
-	Serial.print("Voltage: ");
-	Serial.print(data.Voltage);
-	Serial.println(" V");
+  Serial.print("Voltage: ");
+  Serial.print(data.Voltage);
+  Serial.println(" V");
 
-	Serial.print("Percentage: ");
-	Serial.print(data.Charge);
-	Serial.println(" %");
+  Serial.print("Percentage: ");
+  Serial.print(data.Charge);
+  Serial.println(" %");
 
-	Serial.print("Alert: ");
-	Serial.println(data.Alert);
+  Serial.print("Alert: ");
+  Serial.println(data.Alert);
 
   Serial.print("Signal Strength: ");
-	Serial.print(data.Strength);
+  Serial.print(data.Strength);
   Serial.println("%");
 
   Serial.print("Signal Quality: ");
-	Serial.print(data.Quality);
+  Serial.print(data.Quality);
   Serial.println("%");
 
   Serial.print("Temp:");
@@ -268,28 +268,22 @@ void publish()
 
   particle::Future<bool> successfuture = Particle.publish("sensordata", jsonData, 60, PRIVATE, WITH_ACK);
 
-  if (successfuture)
+  while(!rval.isDone())
   {
-      if (debug)
-      {
-        Serial.println("Publish Succeeded");
-      }
+    delay(1000);
+  }
+	
+  if (debug)
+  {
+     if (successfuture.isSucceeded())
+       Serial.println("Publish Succeeded");
   }
   else
   {
     if (debug)
-    {
       Serial.println("Publish Failed");
-    }
-  }
-
-  delay(5000);
-
-  Particle.process();
-
-  if (debug)
-  {
-    printDebug(data);
+	  
+    printDebug(data);	  
   }
 
   display.Update(data);
@@ -299,7 +293,7 @@ void publish()
 
 void updateTime()
 {
-	time_t lastSyncTimestamp;
+  time_t lastSyncTimestamp;
   unsigned long lastSync = Particle.timeSyncedLast(lastSyncTimestamp);
 
   if (isDateGreater(Time.now(), lastSyncTimestamp))
@@ -313,23 +307,19 @@ void updateTime()
     // Request time synchronization from Particle Device Cloud
     Particle.syncTime();
 
-	  // Wait until Photon receives time from Particle Device Cloud (or connection to Particle Device Cloud is lost)
+    // Wait until Photon receives time from Particle Device Cloud (or connection to Particle Device Cloud is lost)
     waitUntil(Particle.syncTimeDone);
   }
 
   if (isDST())
   {
     if (!Time.isDST())
-    {
       Time.beginDST();
-    }
   }
   else
   {
     if (Time.isDST())
-    {
       Time.endDST();
-    }
   }
 }
 
@@ -338,18 +328,15 @@ bool isDateGreater(time_t a, time_t b)
   struct tm *tmpa = gmtime(&a);
   struct tm *tmpb = gmtime(&b);
 
-  if (tmpa->tm_year > tmpb->tm_year){
+  if (tmpa->tm_year > tmpb->tm_year)
     return true;
-  }
 
-  if (tmpa->tm_mon > tmpb-> tm_mon){
+  if (tmpa->tm_mon > tmpb-> tm_mon)
     return true;
-  }
 
-  if (tmpa->tm_mday > tmpb-> tm_mday){
+  if (tmpa->tm_mday > tmpb-> tm_mday)
     return true;
-  }
-
+  
    return false;
 }
 
@@ -361,15 +348,11 @@ bool isDST()
   int dayOfWeek = Time.weekday();
 
   if (month < 3 || month > 11)
-  {
     return false;
-  }
 
   if (month > 3 && month < 11)
-  {
     return true;
-  }
-
+  
   int previousSunday = dayOfMonth - (dayOfWeek - 1);
 
   if (month == 3)
