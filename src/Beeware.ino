@@ -268,11 +268,11 @@ void publish()
 
   particle::Future<bool> successfuture = Particle.publish("sensordata", jsonData, 60, PRIVATE, WITH_ACK);
 
-  while(!rval.isDone())
+  while(!successfuture.isDone())
   {
     delay(1000);
   }
-	
+
   if (debug)
   {
      if (successfuture.isSucceeded())
@@ -282,8 +282,8 @@ void publish()
   {
     if (debug)
       Serial.println("Publish Failed");
-	  
-    printDebug(data);	  
+
+    printDebug(data);
   }
 
   display.Update(data);
@@ -336,7 +336,7 @@ bool isDateGreater(time_t a, time_t b)
 
   if (tmpa->tm_mday > tmpb-> tm_mday)
     return true;
-  
+
    return false;
 }
 
@@ -352,7 +352,7 @@ bool isDST()
 
   if (month > 3 && month < 11)
     return true;
-  
+
   int previousSunday = dayOfMonth - (dayOfWeek - 1);
 
   if (month == 3)
