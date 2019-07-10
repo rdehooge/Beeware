@@ -51,9 +51,10 @@ const int LOW_POWER_MODE_INTERVAL_SEC = 600;  // 10 minutes
 const int SOC_LOW = 40;             // 40% charge dropped below low limit
 const int SOC_HIGH = 80;            // 80% enough power to keep running
 
-bool initialized = false;
-bool debug = false;
+const unsigned long UPDATE_LIMIT = 600000; // 10 minutes
+retained unsigned long lastUpdated;
 
+bool debug = false;
 double voltage = 0;
 double soc = 0;
 int alert = 0;
@@ -286,9 +287,23 @@ void publish()
     printDebug(data);
   }
 
-  display.Update(data);
+  unsigned long time = millis();
 
-  initialized = true;
+  if (time <= lastUpdated)
+  {
+    lastUpdated = 0;
+
+    display.Update(data);
+  }
+  else
+  {
+    if ((lastUpdated - time) >  UPDATE_LIMIT)
+    {
+      display.Update(data);
+
+      lastUpdated = time;
+    }
+  }
 }
 
 void updateTime()
