@@ -289,5 +289,3 @@ void Paint::DrawFilledCircle(int x, int y, int radius, int colored) {
         }
     } while(x_pos <= 0);
 }
-
-/* END OF FILE */

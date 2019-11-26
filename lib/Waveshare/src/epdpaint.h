@@ -44,5 +44,3 @@ private:
 };
 
 #endif
-
-/* END OF FILE */

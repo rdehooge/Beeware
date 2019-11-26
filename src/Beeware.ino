@@ -1,6 +1,5 @@
 #include <SPI.h>
-#include <Display.h>
-
+#include "Display.h"
 #include "OPENSCALE.h"
 #include "MAX17043.h"
 #include "SI7021.h"
@@ -36,7 +35,7 @@ STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
 STARTUP(System.enableFeature(FEATURE_RETAINED_MEMORY));
 STARTUP(System.disable(SYSTEM_FLAG_PUBLISH_RESET_INFO));
 
-Display display(SPI, EPD_DC_PIN, EPD_CS_PIN, EPD_BUSY_PIN, EPD_RESET_PIN);
+Display display(SPI, EPD_DC_PIN, EPD_CS_PIN, EPD_RESET_PIN, EPD_BUSY_PIN);
 MAX17043 powerModule(Wire);
 OPENSCALE weightSensor(Serial1);
 SI7021 tempSensor(Wire, SI7021_CONTROL_PIN);
@@ -51,7 +50,7 @@ const int LOW_POWER_MODE_INTERVAL_SEC = 600;  // 10 minutes
 const int SOC_LOW = 40;             // 40% charge dropped below low limit
 const int SOC_HIGH = 80;            // 80% enough power to keep running
 
-const unsigned long UPDATE_LIMIT = 600000; // 10 minutes
+const unsigned long UPDATE_LIMIT = 900000; // 15 minutes
 retained unsigned long lastUpdated;
 
 bool debug = false;
@@ -84,12 +83,10 @@ void setup()
 
     Serial.printf("%s\n", "Connected Debug");
   }
-  else
-  {
-    //  RGB.control(true);
-    //  RGB.brightness(0);
-    //  RGB.control(false);
-  }
+
+  RGB.control(true);
+  RGB.brightness(0);
+  RGB.control(false);
 
   debug = true;
 
@@ -99,27 +96,32 @@ void setup()
 
   tempSensor.turnOn();
 
+  if (debug)
+    Serial.println("Temp Module On");
+
   // power monitoring
-  Wire.begin();
-  powerModule.Initialize();
+   Wire.begin();
+   powerModule.Initialize();
+
+  if (debug)
+    Serial.println("Power Module On");
 
   // weight sensor
   Serial1.begin(9600, SERIAL_8N1); // start uart
 
-  int status = display.Initialize();
+  if (debug)
+    Serial.println("Weight Module On");
+
+  int status = display.Setup();
+
+  if (status != 0 && debug)
+  {
+    Serial.print("Display Statup Failed: ");
+    Serial.println(status);
+  }
 
   if (debug)
   {
-    if (status != 0)
-    {
-      Serial.print("Display Statup Failed: ");
-      Serial.println(status);
-    }
-    else
-    {
-      Serial.println("Display Statup Success");
-    }
-
     if (!tempSensor.verify())
     {
         Serial.println("Temperature Sensor Fault");
@@ -293,13 +295,25 @@ void publish()
   {
     lastUpdated = 0;
 
-    display.Update(data);
+    int status = display.Update(data);
+
+    if (status != 0 && debug)
+    {
+      Serial.print("Display Statup Failed: ");
+      Serial.println(status);
+    }
   }
   else
   {
     if ((lastUpdated - time) >  UPDATE_LIMIT)
     {
-      display.Update(data);
+      int status = display.Update(data);
+
+      if (status != 0 && debug)
+      {
+        Serial.print("Display Statup Failed: ");
+        Serial.println(status);
+      }
 
       lastUpdated = time;
     }

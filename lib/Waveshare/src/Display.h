@@ -1,15 +1,16 @@
 #ifndef Display_H
 #define Display_H
 
-#include <epd29b.h>
+#include <epd29.h>
 #include <epdpaint.h>
 #include <SPI.h>
 
 #define COLORED     0
 #define UNCOLORED   1
 
+//296 × 128
 const int width = 128;
-const int height = 13;
+const int height = 296;
 
 typedef struct _DeviceData
 {
@@ -29,7 +30,7 @@ public:
     Display(SPIClass& spi, int16_t dc, int16_t cs, int16_t reset, int16_t busy)
     {
       _epd = new Epd(spi, dc, cs, reset, busy);
-      _image = new unsigned char[1024];
+      _image = new unsigned char[4736];
       _paint = new Paint(_image, width, height);
     }
 
@@ -40,15 +41,13 @@ public:
       delete _epd;
     }
 
-    int Initialize(void);
-    void Update(DeviceData &data);
+    int Setup(void);
+    int Update(DeviceData &data);
 
   private:
     unsigned char* _image;
     Epd* _epd;
     Paint* _paint;    //width should be the multiple of 8
-
-    void Setup(void);
 };
 
 #endif
