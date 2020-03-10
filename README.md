@@ -1,6 +1,5 @@
 # Beeware
-
-BeeHive Project
+Bee hive automation
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjEwMzU3NTQzXX0=
+eyJoaXN0b3J5IjpbLTE2MTgzMjg2ODFdfQ==
 -->
